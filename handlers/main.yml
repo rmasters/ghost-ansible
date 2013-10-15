@@ -1,0 +1,12 @@
+---
+
+- name: restart nginx
+  service: name=nginx state=restarted
+  
+# Restart the supervisor service itself, for loading new configuration
+- name: restart supervisor
+  service: name=supervisor state=restarted
+  
+# Restart the forever instance (i.e. if a new version of the app is installed)
+- name: restart ghost
+  supervisorctl: name=ghost state=restarted

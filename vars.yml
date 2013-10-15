@@ -1,0 +1,15 @@
+---
+# Default variables
+
+ghost:
+  domain_name: example.org
+  install_dir: /srv/ghost
+  user: ghost
+  repo_url: https://github.com/TryGhost/Ghost.git
+  listen_addr: 127.0.0.1
+  listen_port: 2368
+  mail:
+    transport: SMTP # or SES
+    smtp_service: ~ # or Mailgun
+    user: postmaster@example.org
+    pass: password

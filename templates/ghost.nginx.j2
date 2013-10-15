@@ -1,0 +1,13 @@
+server {
+    server_name {{ ghost.domain_name }};
+    server_tokens off;
+
+    access_log /var/log/nginx/$host.access.log;
+    error_log /var/log/nginx/$host.error.log;
+
+    location / {
+        proxy_pass http://{{ ghost.listen_addr }}:{{ ghost.listen_port }};
+        proxy_set_header Host $host;
+        proxy_buffering off;
+    }
+}

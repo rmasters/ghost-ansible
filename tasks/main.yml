@@ -1,0 +1,76 @@
+---
+
+- name: update + upgrade
+  apt: update_cache=yes upgrade=dist
+
+- name: install dependencies
+  apt: pkg={{ item }}
+  with_items:
+    - build-essential
+    - python-software-properties
+    - python
+    - python-pycurl
+    - g++
+    - make
+    - git
+
+# Save some time and use a pre-built PPA rather than building from source
+- name: get nodejs ppa
+  apt_repository: repo=ppa:chris-lea/node.js update_cache=yes
+
+- name: install node.js
+  apt: pkg=nodejs
+
+# Install Supervisord to keep an eye on forever
+- name: install supervisor
+  apt: pkg=supervisor
+  
+- name: configure supervisor
+  template: src=ghost.supervisor.j2 dest=/etc/supervisor/conf.d/ghost.conf
+  notify: restart supervisor
+
+# Setup Ghost
+- name: create ghost user
+  user: name={{ ghost.user }} createhome=no shell=/bin/nologin
+
+- name: create ghost install dir
+  file: path={{ ghost.install_dir }} state=directory owner={{ ghost.user }} group={{ ghost.user }}
+
+# Work out what the most recent release is
+- name: get ghost release
+  local_action: command python roles/ghost/release.py
+  register: ghost_release
+
+- name: download ghost release
+  get_url: url=${ghost_release.stdout} dest=/tmp/ghost_release.zip
+
+- name: extract ghost release
+  command: unzip -qod {{ ghost.install_dir }} /tmp/ghost_release.zip
+
+- name: update ownership of ghost dir
+  file: path={{ ghost.install_dir }} owner={{ ghost.user }} recurse=yes state=directory
+
+- name: install node dependencies
+  npm: path={{ ghost.install_dir }} production=yes
+
+- name: configure ghost
+  template: src=config.js.j2 dest={{ ghost.install_dir }}/config.js
+  notify: restart ghost
+ 
+# Setup webserver
+- name: get nginx ppa
+  apt_repository: repo=ppa:nginx/stable update_cache=yes
+  
+- name: install nginx
+  apt: pkg=nginx
+  
+- name: disable default nginx virtualhost
+  file: path=/etc/nginx/sites-enabled/default state=absent
+  
+- name: install ghost virtualhost
+  template: src=ghost.nginx.j2 dest=/etc/nginx/sites-available/ghost
+  
+- name: enable ghost virtualhost
+  file: src=/etc/nginx/sites-available/ghost path=/etc/nginx/sites-enabled/ghost state=link
+  notify: restart nginx
+
