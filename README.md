@@ -41,3 +41,4 @@ The release-checker script is hard-coded to `roles/ghost/release.py`, as
 
 [setup-guide]: http://ghosted.co/install-ghost-digitalocean
 [corbettbarr]: http://twitter.com/corbettbarr
+[ansible-examples]: https://github.com/ansible/ansible-examples
