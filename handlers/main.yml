@@ -7,6 +7,6 @@
 - name: restart supervisor
   service: name=supervisor state=restarted
   
-# Restart the forever instance (i.e. if a new version of the app is installed)
+# Restart the node instance (i.e. if reconfigured or new version installed)
 - name: restart ghost
   supervisorctl: name=ghost state=restarted
